@@ -11,9 +11,7 @@ from colorama import Fore, init
 init(autoreset=True)
 load_dotenv()
 
-# ==========================================
 # CONFIGURATION
-# ==========================================
 CLIENT_ID = os.getenv('REDDIT_CLIENT_ID')
 CLIENT_SECRET = os.getenv('REDDIT_CLIENT_SECRET')
 USER_AGENT = os.getenv('REDDIT_USER_AGENT')
@@ -23,7 +21,7 @@ TARGET_SUBREDDIT_COUNT = 20
 
 # SETTINGS
 VALIDATION_LIMIT = 50 
-HARVEST_LIMIT = 1000 
+HARVEST_LIMIT = 2000 
 
 # VOCABULARY FOR VALIDATION
 # Positive words (Laptop indicators)
@@ -33,7 +31,7 @@ LAPTOP_KEYWORDS = {
     'oled', 'backlight', 'gaming laptop', 'notebook', 'mobility', 'portability'
 }
 
-# Negative words (Desktop/Console indicators) - NEW FEATURE
+# Negative words (Desktop/Console indicators)
 DESKTOP_KEYWORDS = {
     'desktop', 'tower', 'monitor', 'buildapc', 'atx', 'itx', 'motherboard', 
     'ps5', 'xbox', 'console', 'controller', 'tv', 'cabinet', 'water cooling',
@@ -67,7 +65,7 @@ class SubredditSpider:
 
             score = 0
             
-            # 1. Check Description
+            # Check Description
             desc = (sub.public_description or "") + (sub.title or "")
             desc_lower = desc.lower()
             
@@ -76,7 +74,7 @@ class SubredditSpider:
             if any(k in desc_lower for k in DESKTOP_KEYWORDS):
                 score -= 5  # Penalize for desktop keywords in description
 
-            # 2. Check Recent Posts
+            # Check Recent Posts
             for post in sub.hot(limit=VALIDATION_LIMIT):
                 text = (post.title + " " + (post.selftext or "")).lower()
                 
@@ -112,8 +110,7 @@ class SubredditSpider:
         subreddit = self.reddit.subreddit(sub_name)
         new_links_found = set()
         
-        # MEMORY OPTIMIZATION: Write to file directly
-        # We use .jsonl format (one valid JSON object per line)
+        # Use .jsonl format
         filename = f"data/raw/{sub_name}.jsonl" 
 
         retries = 3

@@ -24,35 +24,35 @@ def train_model():
     
     df = pd.read_csv(LABELED_FILE)
 
-    # 1. Clean the data
+    # Clean the data
     # Drop rows where you forgot to label (NaN)
     df = df.dropna(subset=['relevant_label'])
 
     print(f"Training on {len(df)} labeled examples.")
     print(f"Class Balance: {df['relevant_label'].value_counts().to_dict()}") 
 
-    # 2. Prepare Features (X) and Target (y)
+    # Prepare Features (X) and Target (y)
     if 'processed_tokens' in df.columns and df['processed_tokens'].notna().all():
         X = df['processed_tokens'].astype(str)
         
     y = df['relevant_label']
 
-    # 3. Split Data (80% Train, 20% Test)
+    # Split Data (80% Train, 20% Test)
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42, stratify=y
     )
 
-    # 4. Build Pipeline (TF-IDF + Logistic Regression)
+    # Build Pipeline (TF-IDF + Logistic Regression)
     # n_gram_range=(1,2) includes "not good" as a feature, handling negation better
     pipeline = Pipeline([
         ('tfidf', TfidfVectorizer(max_features=2000, ngram_range=(1, 2))),
         ('clf', LogisticRegression(class_weight='balanced')) 
     ])
 
-    # 5. Train
+    # Train
     pipeline.fit(X_train, y_train)
 
-    # 6. Evaluate
+    # Evaluate
     print("\nModel Evaluation")
     y_pred = pipeline.predict(X_test)
     print(classification_report(y_test, y_pred))
@@ -122,9 +122,9 @@ def filter_and_save_data(model):
     print(f"Clean files saved to: {OUTPUT_DIR}")
 
 if __name__ == "__main__":
-    # 1. Train
+    # Train
     trained_model = train_model()
     
-    # 2. Filter
+    # Filter
     if trained_model:
         filter_and_save_data(trained_model)

@@ -37,11 +37,11 @@ def clean_text_logic(text, without_stopwords=False):
     if not text or not isinstance(text, str):
         return []
 
-    # 1. Basic Decode
+    # Basic Decode
     text = html.unescape(text)
     text = unicodedata.normalize('NFKD', text)
     
-    # 2. Regex Cleaning
+    # Regex Cleaning
     text = re.sub(r'http\S+', '', text)
     text = re.sub(r'!\[.*?\]\(.*?\)', '', text)
     text = re.sub(r'\[(.*?)\]\(.*?\)', r'\1', text)
@@ -54,7 +54,7 @@ def clean_text_logic(text, without_stopwords=False):
     # Keep only letters and spaces
     text = re.sub("[^A-Za-z]+", ' ', text).lower()
     
-    # 3. NLP Processing
+    # NLP Processing
     doc = nlp(text)
     
     processed_words = []
@@ -89,7 +89,7 @@ def process_single_file(filepath):
             except json.JSONDecodeError:
                 continue 
             
-            # 1. Process Main Post
+            # Process Main Post
             if raw_obj.get('body'):
                 clean_tokens = clean_text_logic(raw_obj['body'])
                 if clean_tokens:
@@ -104,7 +104,7 @@ def process_single_file(filepath):
                         "processed_tokens": " ".join(clean_tokens) # Join as string for CSV
                     })
 
-            # 2. Process Comments
+            # Process Comments
             for comment in raw_obj.get('comments', []):
                 if not comment.get('body'): continue
                 
@@ -179,15 +179,15 @@ def main():
     for filepath in jsonl_files:
         sub_name, data = process_single_file(filepath)
         
-        # 1. Save full processed data as CSV
+        # Save full processed data as CSV
         save_csv(sub_name, data)
         
-        # 2. Add to sampling pool (take up to 100 random items per file to avoid memory issues)
+        # Add to sampling pool (take up to 100 random items per file to avoid memory issues)
         if data:
             batch_sample = random.sample(data, min(len(data), 100))
             sampling_pool.extend(batch_sample)
 
-    # 3. Create the final 500-item sample
+    # Create the final 500-item sample
     create_labeling_sample(sampling_pool, n=500)
 
 if __name__ == "__main__":
